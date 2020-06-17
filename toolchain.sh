@@ -10,7 +10,7 @@
 ##Dependancies
 function fetch_tools
 {
-apt-get -y install llvm clang clang-tools git
+apt-get -y install llvm clang git
 }
 
 ## Configure Rust - This will end up in /root/whatever
