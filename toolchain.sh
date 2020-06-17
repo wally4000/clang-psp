@@ -47,7 +47,7 @@ function populateSDK
 {
     echo "Populate SDK"
 #Setup Directories
-mkdir "/usr/local/pspdev" "/usr/local/pspdev/psp/" "/usr/local/pspdev/psp/sdk/" "/usr/local/pspdev/psp/sdk/include" "/usr/local/pspdev/psp/sdk/share/" "/usr/local/pspdev/psp/sdk/lib/" "/usr/local/pspdev/psp/sdk/bin"
+mkdir "/usr/mipsel-sony-psp" "/usr/mipsel-sony-psp/psp/" "/usr/mipsel-sony-psp/psp/sdk/" "/usr/mipsel-sony-psp/psp/sdk/include" "/usr/mipsel-sony-psp/psp/sdk/share/" "/usr/mipsel-sony-psp/psp/sdk/lib/" "/usr/mipsel-sony-psp/psp/sdk/bin"
 
 #Fetch PSPSDK
 git clone git://github.com/pspdev/pspsdk
@@ -60,10 +60,10 @@ rm -rf pspsdk/src/libc
 #find and move headers to appropriate directory
 find pspsdk/src -name '*.h' -exec  mv '{}' /usr/local/pspdev/psp/sdk/include \;
 
-cp -r "resources/cmake" "/usr/local/pspdev/psp/sdk/share"
-cp -r "resources/lib" "/usr/local/pspdev/psp/sdk/"
-cp "~/root/.cargo/bin/pack-pbp" "/usr/local/pspdev/psp/sdk/bin"
-cp "/root/.cargo/bin/mksfo" "/usr/local/pspdev/psp/sdk/bin"
+cp -r "resources/cmake" "/usr/mipsel-sony-psp/psp/sdk/share"
+cp -r "resources/lib" "/usr/mipsel-sony-psppsp/sdk/"
+cp "/root/.cargo/bin/pack-pbp" "/usr/mipsel-sony-psp/psp/sdk/bin"
+cp "/root/.cargo/bin/mksfo" "/usr/mipsel-sony-psp/psp/sdk/bin"
 }
 
 
