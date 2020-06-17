@@ -7,15 +7,29 @@
 
 #Note this entire script will need to be run as root.
 
-##Dependancies
-function fetch_tools
+# To make it easier to update clang via CI.
+CLANG_VER=10
+
+##LLVM / Clang
+function fetch_clang
 {
-apt-get -y install llvm clang git makeinfo
+    echo "Fetching Clang"
+bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)"
+
+# LLVM
+apt-get -y install libllvm-$CLANG_VER-ocaml-dev libllvm$CLANG_VER llvm-$CLANG_VER llvm-$CLANG_VER-dev llvm-$CLANG_VER-doc llvm-$CLANG_VER-examples llvm-$CLANG_VER-runtime
+# Clang and co
+apt-get -y install clang-$CLANG_VER clang-tools-$CLANG_VER clang-$CLANG_VER-doc libclang-common-$CLANG_VER-dev libclang-$CLANG_VER-dev libclang1-$CLANG_VER clang-format-$CLANG_VER python-clang-$CLANG_VER clangd-$CLANG_VER
+# libfuzzer, lldb, lld (linker), libc++, OpenMP
+apt-get -y install libfuzzer-$CLANG_VER-dev lldb-$CLANG_VER lld-$CLANG_VER libc++-$CLANG_VER-dev libc++abi-$CLANG_VER-dev libomp-$CLANG_VER-dev
+
+apt-get -y install git texi2html
 }
 
 ## Configure Rust - This will end up in /root/whatever
 function fetch_rust
 {
+    echo "Fetching Rust"
     ##Deploy rust without interaction
 curl https://sh.rustup.rs -sSf | sh -s -- -y
 
@@ -48,8 +62,8 @@ find pspsdk/src -name '*.h' -exec  mv '{}' /usr/local/pspdev/psp/sdk/include \;
 
 cp -r "resources/cmake" "/usr/local/pspdev/psp/sdk/share"
 cp -r "resources/lib" "/usr/local/pspdev/psp/sdk/"
-cp "~/.cargo/bin/pack-pbp" "/usr/local/pspdev/psp/sdk/bin"
-cp "~/.cargo/bin/mksfo" "/usr/local/pspdev/psp/sdk/bin"
+cp "~/root/.cargo/bin/pack-pbp" "/usr/local/pspdev/psp/sdk/bin"
+cp "/root/.cargo/bin/mksfo" "/usr/local/pspdev/psp/sdk/bin"
 }
 
 #Fetch current compatible newlib 1.20 for PSP and patch for clang
@@ -61,12 +75,12 @@ git clone --single-branch --branch newlib-1_20_0-PSP git://github.com/pspdev/new
 cd newlib
 patch -p1 < ../patches/newlib-clang.patch
  mkdir build && cd build
-../configure AR_FOR_TARGET=llvm-ar AS_FOR_TARGET=llvm-as RANLIB_FOR_TARGET=llvm-ranlib CC_FOR_TARGET=clang CXX_FOR_TARGET=clang++ --target=psp --enable-newlib-iconv --enable-newlib-multithread --enable-newlib-mb --prefix=/usr/local/pspdev
+../configure AR_FOR_TARGET=llvm-ar-$CLANG_VER AS_FOR_TARGET=llvm-as-$CLANG_VER RANLIB_FOR_TARGET=llvm-ranlib-$CLANG_VER CC_FOR_TARGET=clang-$CLANG_VER CXX_FOR_TARGET=clang++-$CLANG_VER --target=psp --enable-newlib-iconv --enable-newlib-multithread --enable-newlib-mb --prefix=/usr/local/pspdev
 make -j6
 make -j6 install
 }
 
-fetch_tools
+fetch_clang
 fetch_rust
 populateSDK
 fetch_newlib
