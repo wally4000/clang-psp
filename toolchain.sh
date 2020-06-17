@@ -23,7 +23,7 @@ apt-get -y install clang-$CLANG_VER clang-tools-$CLANG_VER clang-$CLANG_VER-doc 
 # libfuzzer, lldb, lld (linker), libc++, OpenMP
 apt-get -y install libfuzzer-$CLANG_VER-dev lldb-$CLANG_VER lld-$CLANG_VER libc++-$CLANG_VER-dev libc++abi-$CLANG_VER-dev libomp-$CLANG_VER-dev
 
-apt-get -y install git texi2html
+apt-get -y install git texi2html libc6-de
 }
 
 ## Configure Rust - This will end up in /root/whatever
