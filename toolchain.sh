@@ -66,8 +66,20 @@ cp "~/root/.cargo/bin/pack-pbp" "/usr/local/pspdev/psp/sdk/bin"
 cp "/root/.cargo/bin/mksfo" "/usr/local/pspdev/psp/sdk/bin"
 }
 
-#Fetch current compatible newlib 1.20 for PSP and patch for clang
+
 function fetch_newlib
+{
+git clone git://github.com/NT-Bourgeois-Iridescence-Technologies/newlib
+
+#Patch Newlib - Temporary until patches are done upstream
+cd newlib
+mkdir build && cd build
+CC=clang-$CLANG_VER ../configure AR_FOR_TARGET=llvm-ar-$CLANG_VER AS_FOR_TARGET=llvm-as-$CLANG_VER RANLIB_FOR_TARGET=llvm-ranlib-$CLANG_VER CC_FOR_TARGET=clang-$CLANG_VER CXX_FOR_TARGET=clang++-$CLANG_VER --target=psp --enable-newlib-iconv --enable-newlib-multithread --enable-newlib-mb --prefix=/usr/local/pspdev
+make -j6
+make -j6 install
+}
+#Fetch current compatible newlib 1.20 for PSP and patch for clang
+function fetch_newlibold
 {
 git clone --single-branch --branch newlib-1_20_0-PSP git://github.com/pspdev/newlib/
 
