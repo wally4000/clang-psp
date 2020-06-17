@@ -7,8 +7,6 @@
 
 #Note this entire script will need to be run as root.
 
-# Fetch Dependancies
-
 ##LLVM / Clang
 function fetch_clang
 {
@@ -46,19 +44,21 @@ function populateSDK
 {
     echo "Populate SDK"
 #Setup Directories
-mkdir "/usr/local/pspdev" "/usr/local/pspdev/psp/" "/usr/local/pspdev/psp/sdk/" "/usr/local/pspdev/psp/sdk/include"
+mkdir "/usr/local/pspdev" "/usr/local/pspdev/psp/" "/usr/local/pspdev/psp/sdk/" "/usr/local/pspdev/psp/sdk/include" "/usr/local/pspdev/psp/sdk/share/" "/usr/local/pspdev/psp/sdk/lib/"
 
 #Fetch PSPSDK
 git clone git://github.com/pspdev/pspsdk
 
 #Move Samples
+rm pspsdk/src/samples/Makefile.am
 mv pspsdk/src/samples /usr/local/pspdev/psp/sdk/samples 
-
 #Remove libc folder to avoid conflicts
 rm -rf pspsdk/src/libc
 #find and move headers to appropriate directory
 find pspsdk/src -name '*.h' -exec  mv '{}' /usr/local/pspdev/psp/sdk/include \;
 
+cp -r "resources/cmake" "/usr/local/pspdev/psp/sdk/share"
+cp -r "resources/lib" "/usr/local/pspdev/psp/sdk/"
 }
 
 #Fetch current compatible newlib 1.20 for PSP and patch for clang
