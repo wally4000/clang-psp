@@ -7,16 +7,17 @@
 # Copyright (c) 2005 Marcus R. Brown <mrbrown@ocgnet.org>
 # Copyright (c) 2005 James Forshaw <tyranid@gmail.com>
 # Copyright (c) 2005 John Kelley <ps2dev@kelley.ca>
-#
+# Copyright (c) 2020 Ben Slater (catapultit@me.com)
+
 
 # Note: The PSPSDK make variable must be defined before this file is included.
 ifeq ($(PSPSDK),)
 $(error $$(PSPSDK) is undefined.  Use "PSPSDK := $$(shell psp-config --pspsdk-path)" in your Makefile)
 endif
 
-CC       = clang
-CXX      = clang++
-AS       = llvm-as
+CC       = clang-10
+CXX      = clang++-10
+AS       = llvm-as-10
 LD       = ld.lld-10
 AR       = llvm-ar
 RANLIB   = llvm-ranlib
