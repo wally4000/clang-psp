@@ -51,25 +51,7 @@ LDFLAGS += -emit-relocs --eh-frame-hdr
 LDFLAGS += --no-gc-sections
 
 
-# Library selection.  By default we link with Newlib's libc.  Allow the
-# user to link with PSPSDK's libc if USE_PSPSDK_LIBC is set to 1.
-
-ifeq ($(USE_KERNEL_LIBC),1)
-# Use the PSP's kernel libc
-PSPSDK_LIBC_LIB = 
-CFLAGS := -I$(PSPSDK)/include/libc $(CFLAGS)
-else
-ifeq ($(USE_PSPSDK_LIBC),1)
-# Use the pspsdk libc
-PSPSDK_LIBC_LIB = -lpsplibc
-CFLAGS := -I$(PSPSDK)/include/libc $(CFLAGS)
-else
-# Use newlib (urgh)
-PSPSDK_LIBC_LIB = -lc
-endif
-endif
-
-LIBS += -lpsp
+LIBS += -lpsp -lc
 
 
 # Define the overridable parameters for EBOOT.PBP
@@ -142,7 +124,7 @@ SCEkxploit: $(TARGET).elf $(PSP_EBOOT_SFO)
 		$(PSP_EBOOT_SND0) NULL $(PSP_EBOOT_PSAR)
 
 $(TARGET).elf: $(OBJS) $(EXPORT_OBJ)
-	$(LD) $(LDFLAGS) -T $(HOME)/.pspdev/lib/linkfile.ld $(LIBS) -o $@ $^ $(HOME)/.pspdev/lib/modulestart.o $(HOME)/.pspdev/lib/prxexports.o
+	$(LD) $(LDFLAGS) -T $(PSPSDK)/lib/linkfile.ld $(LIBS) -o $@ $^ $(PSPSDK)/lib/modulestart.o $(PSPSDK)/lib/prxexports.o
 
 $(TARGET_LIB): $(OBJS)
 	$(AR) cru $@ $(OBJS)

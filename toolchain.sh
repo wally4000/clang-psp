@@ -44,7 +44,7 @@ function populateSDK
 {
     echo "Populate SDK"
 #Setup Directories
-mkdir "/usr/local/pspdev" "/usr/local/pspdev/psp/" "/usr/local/pspdev/psp/sdk/" "/usr/local/pspdev/psp/sdk/include" "/usr/local/pspdev/psp/sdk/share/" "/usr/local/pspdev/psp/sdk/lib/"
+mkdir "/usr/local/pspdev" "/usr/local/pspdev/psp/" "/usr/local/pspdev/psp/sdk/" "/usr/local/pspdev/psp/sdk/include" "/usr/local/pspdev/psp/sdk/share/" "/usr/local/pspdev/psp/sdk/lib/" "/usr/local/pspdev/psp/sdk/bin"
 
 #Fetch PSPSDK
 git clone git://github.com/pspdev/pspsdk
@@ -59,6 +59,8 @@ find pspsdk/src -name '*.h' -exec  mv '{}' /usr/local/pspdev/psp/sdk/include \;
 
 cp -r "resources/cmake" "/usr/local/pspdev/psp/sdk/share"
 cp -r "resources/lib" "/usr/local/pspdev/psp/sdk/"
+cp "~/.cargo/bin/pack-pbp" "/usr/local/pspdev/psp/sdk/bin"
+cp "~/.cargo/bin/mksfo" "/usr/local/pspdev/psp/sdk/bin"
 }
 
 #Fetch current compatible newlib 1.20 for PSP and patch for clang
