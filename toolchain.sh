@@ -23,7 +23,7 @@ apt-get -y install clang-$CLANG_VER clang-tools-$CLANG_VER clang-$CLANG_VER-doc 
 # libfuzzer, lldb, lld (linker), libc++, OpenMP
 apt-get -y install libfuzzer-$CLANG_VER-dev lldb-$CLANG_VER lld-$CLANG_VER libc++-$CLANG_VER-dev libc++abi-$CLANG_VER-dev libomp-$CLANG_VER-dev
 
-apt-get -y install git texi2html libc6-de
+apt-get -y install git texi2html 
 }
 
 ## Configure Rust - This will end up in /root/whatever
@@ -65,7 +65,7 @@ function populateSDK
 {
     echo "Populate SDK"
 #Setup Directories
-mkdir "/usr/mipsel-sony-psp" "/usr/mipsel-sony-psp/psp/" "/usr/mipsel-sony-psp/psp/sdk/" "/usr/mipsel-sony-psp/psp/sdk/include" "/usr/mipsel-sony-psp/psp/sdk/share/" "/usr/mipsel-sony-psp/psp/sdk/lib/" "/usr/mipsel-sony-psp/psp/sdk/bin"
+mkdir "/usr/mipsel-sony-psp" "/usr/mipsel-sony-psp/psp/" "/usr/mipsel-sony-psp/psp/sdk/" "/usr/mipsel-sony-psp/psp/bin"  "/usr/mipsel-sony-psp/psp/sdk/include" "/usr/mipsel-sony-psp/psp/sdk/share/" "/usr/mipsel-sony-psp/psp/sdk/lib/" "/usr/mipsel-sony-psp/psp/sdk/bin"
 
 #Fetch PSPSDK
 git clone git://github.com/wally4000/pspsdk
@@ -78,15 +78,17 @@ rm -rf pspsdk/src/libc
 #find and move headers to appropriate directory
 find pspsdk/src -name '*.h' -exec  mv '{}' /usr/mipsel-sony-psp/psp/sdk/include \;
 
-cp -r "resources/cmake" "/usr/mipsel-sony-psp/psp/sdk/share"
-cp -r "resources/lib" "/usr/mipsel-sony-psppsp/sdk/"
+cp -r "../resources/cmake" "/usr/mipsel-sony-psp/psp/sdk/share"
+cp -r "../resources/lib" "/usr/mipsel-sony-psp/psp/sdk/"
 cp "/root/.cargo/bin/pack-pbp" "/usr/mipsel-sony-psp/psp/sdk/bin"
 cp "/root/.cargo/bin/mksfo" "/usr/mipsel-sony-psp/psp/sdk/bin"
 cp "rust-psp/target/mipsel-sony-psp/debug/libpsp.a" "/usr/mipsel-sony-psp/psp/sdk/lib"
+echo $PWD
+clang-$CLANG_VER "../src/tools/psp-prxgen.c" -o "/usr/mipsel-sony-psp/psp/bin/psp-prxgen"
 }
 
 
-function fetch_newlib
+function fetch_newlibnew
 {
 git clone git://github.com/NT-Bourgeois-Iridescence-Technologies/newlib
 
@@ -98,13 +100,13 @@ make -j6
 make -j6 install
 }
 #Fetch current compatible newlib 1.20 for PSP and patch for clang
-function fetch_newlibold
+function fetch_newlib
 {
 git clone --single-branch --branch newlib-1_20_0-PSP git://github.com/pspdev/newlib/
 
 #Patch Newlib - Temporary until patches are done upstream
 cd newlib
-patch -p1 < ../patches/newlib-clang.patch
+patch -p1 < ../../patches/newlib-clang.patch
  mkdir build && cd build
 CC=clang-$CLANG_VER ../configure AR_FOR_TARGET=llvm-ar-$CLANG_VER AS_FOR_TARGET=llvm-as-$CLANG_VER RANLIB_FOR_TARGET=llvm-ranlib-$CLANG_VER CC_FOR_TARGET=clang-$CLANG_VER CXX_FOR_TARGET=clang++-$CLANG_VER --target=psp --enable-newlib-iconv --enable-newlib-multithread --enable-newlib-mb --prefix=/usr/mipsel-sony-psp
 make -j6
