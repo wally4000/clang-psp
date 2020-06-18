@@ -9,7 +9,7 @@
 
 # To make it easier to update clang via CI.
 CLANG_VER=10
-
+mkdir build && cd build
 ##LLVM / Clang
 function fetch_clang
 {
@@ -43,6 +43,24 @@ rustup update
 cargo install cargo-psp
 }
 
+function compile_libpsp
+{
+cargo install xargo
+git clone https://github.com/overdrivenpotato/rust-psp
+
+cat << EOF > rust-psp/psp/Xargo.toml
+[target.mipsel-sony-psp.dependencies.core]
+[target.mipsel-sony-psp.dependencies.alloc]
+[target.mipsel-sony-psp.dependencies.panic_unwind]
+stage = 1
+EOF
+
+  cd rust-psp/psp
+    xargo rustc --features stub-only --target mipsel-sony-psp -- -C opt-level=3 -C panic=abort
+cd ..
+cd ..
+
+}
 function populateSDK
 {
     echo "Populate SDK"
@@ -50,20 +68,21 @@ function populateSDK
 mkdir "/usr/mipsel-sony-psp" "/usr/mipsel-sony-psp/psp/" "/usr/mipsel-sony-psp/psp/sdk/" "/usr/mipsel-sony-psp/psp/sdk/include" "/usr/mipsel-sony-psp/psp/sdk/share/" "/usr/mipsel-sony-psp/psp/sdk/lib/" "/usr/mipsel-sony-psp/psp/sdk/bin"
 
 #Fetch PSPSDK
-git clone git://github.com/pspdev/pspsdk
+git clone git://github.com/wally4000/pspsdk
 
 #Move Samples
 rm pspsdk/src/samples/Makefile.am
-mv pspsdk/src/samples /usr/local/pspdev/psp/sdk/samples 
+mv pspsdk/src/samples /usr/mipsel-sony-psp/psp/sdk/samples 
 #Remove libc folder to avoid conflicts
 rm -rf pspsdk/src/libc
 #find and move headers to appropriate directory
-find pspsdk/src -name '*.h' -exec  mv '{}' /usr/local/pspdev/psp/sdk/include \;
+find pspsdk/src -name '*.h' -exec  mv '{}' /usr/mipsel-sony-psp/psp/sdk/include \;
 
 cp -r "resources/cmake" "/usr/mipsel-sony-psp/psp/sdk/share"
 cp -r "resources/lib" "/usr/mipsel-sony-psppsp/sdk/"
 cp "/root/.cargo/bin/pack-pbp" "/usr/mipsel-sony-psp/psp/sdk/bin"
 cp "/root/.cargo/bin/mksfo" "/usr/mipsel-sony-psp/psp/sdk/bin"
+cp "rust-psp/target/mipsel-sony-psp/debug/libpsp.a" "/usr/mipsel-sony-psp/psp/sdk/lib"
 }
 
 
@@ -74,7 +93,7 @@ git clone git://github.com/NT-Bourgeois-Iridescence-Technologies/newlib
 #Patch Newlib - Temporary until patches are done upstream
 cd newlib
 mkdir build && cd build
-CC=clang-$CLANG_VER ../configure AR_FOR_TARGET=llvm-ar-$CLANG_VER AS_FOR_TARGET=llvm-as-$CLANG_VER RANLIB_FOR_TARGET=llvm-ranlib-$CLANG_VER CC_FOR_TARGET=clang-$CLANG_VER CXX_FOR_TARGET=clang++-$CLANG_VER --target=psp --enable-newlib-iconv --enable-newlib-multithread --enable-newlib-mb --prefix=/usr/local/pspdev
+CC=clang-$CLANG_VER ../configure AR_FOR_TARGET=llvm-ar-$CLANG_VER AS_FOR_TARGET=llvm-as-$CLANG_VER RANLIB_FOR_TARGET=llvm-ranlib-$CLANG_VER CC_FOR_TARGET=clang-$CLANG_VER CXX_FOR_TARGET=clang++-$CLANG_VER --target=psp --enable-newlib-iconv --enable-newlib-multithread --enable-newlib-mb --prefix=/usr/mipsel-sony-psp
 make -j6
 make -j6 install
 }
@@ -87,13 +106,14 @@ git clone --single-branch --branch newlib-1_20_0-PSP git://github.com/pspdev/new
 cd newlib
 patch -p1 < ../patches/newlib-clang.patch
  mkdir build && cd build
-CC=clang-$CLANG_VER ../configure AR_FOR_TARGET=llvm-ar-$CLANG_VER AS_FOR_TARGET=llvm-as-$CLANG_VER RANLIB_FOR_TARGET=llvm-ranlib-$CLANG_VER CC_FOR_TARGET=clang-$CLANG_VER CXX_FOR_TARGET=clang++-$CLANG_VER --target=psp --enable-newlib-iconv --enable-newlib-multithread --enable-newlib-mb --prefix=/usr/local/pspdev
+CC=clang-$CLANG_VER ../configure AR_FOR_TARGET=llvm-ar-$CLANG_VER AS_FOR_TARGET=llvm-as-$CLANG_VER RANLIB_FOR_TARGET=llvm-ranlib-$CLANG_VER CC_FOR_TARGET=clang-$CLANG_VER CXX_FOR_TARGET=clang++-$CLANG_VER --target=psp --enable-newlib-iconv --enable-newlib-multithread --enable-newlib-mb --prefix=/usr/mipsel-sony-psp
 make -j6
 make -j6 install
 }
 
 fetch_clang
 fetch_rust
+compile_libpsp
 populateSDK
 fetch_newlib
 
