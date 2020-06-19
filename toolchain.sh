@@ -56,8 +56,7 @@ EOF
 
     cd rust-psp/psp
     xargo rustc --features stub-only --target mipsel-sony-psp -- -C opt-level=3 -C panic=abort
-    cd .. & cd ..
-
+    cd $BASE_DIR/build
 }
 function populateSDK
 {
@@ -69,19 +68,23 @@ mkdir "$ROOT_PATH/psp/bin" "$ROOT_PATH/psp/sdk/include" "$ROOT_PATH/psp/sdk/shar
 git clone $PSPSDK_URL
 
 #Move Samples
-rm pspsdk/src/samples/Makefile.am
-mv pspsdk/src/samples /usr/mipsel-sony-psp/psp/sdk/samples 
+rm $BASE_DIR/build/pspsdk/src/samples/Makefile.am
+mv $BASE_DIR/build/pspsdk/src/samples /usr/mipsel-sony-psp/psp/sdk/samples 
 #Remove libc folder to avoid conflicts
-rm -rf pspsdk/src/libc
+rm -rf $BASE_DIR/build/pspsdk/src/libc
 #find and move headers to appropriate directory
-find pspsdk/src -name '*.h' -exec  mv '{}' /usr/mipsel-sony-psp/psp/sdk/include \;
+find $BASE_DIR/build/pspsdk/src -name '*.h' -exec  mv '{}' /usr/mipsel-sony-psp/psp/sdk/include \;
 
 cp -r "$BASE_DIR/resources/cmake" "$ROOT_PATH/psp/sdk/share"
 cp -r "$BASE_DIR/resources/lib" "$ROOT_PATH/psp/sdk/"
 cp "/root/.cargo/bin/pack-pbp" "$ROOT_PATH/psp/sdk/bin"
 cp "/root/.cargo/bin/mksfo" "$ROOT_PATH/psp/sdk/bin"
-cp "rust-psp/target/mipsel-sony-psp/debug/libpsp.a" "$ROOT_PATH/psp/sdk/lib"
-clang-$CLANG_VER "$BASE_DIR/src/tools/psp-prxgen.c" -o "$ROOT_PATH/psp/bin/psp-prxgen"
+
+cp "$BASE_DIR/build/rust-psp/target/mipsel-sony-psp/debug/libpsp.a" "$ROOT_PATH/psp/sdk/lib"
+clang-$CLANG_VER "$BASE_DIR/build/pspsdk/tools/psp-prxgen.c" -o "$ROOT_PATH/psp/bin/psp-prxgen"
+clang-$CLANG_VER "$BASE_DIR/build/pspsdk/tools/bin2c.c" -o "$ROOT_PATH/psp/bin/bin2c"
+clang-$CLANG_VER "$BASE_DIR/build/pspsdk/tools/bin2o.c" -o "$ROOT_PATH/psp/bin/bin2o"
+clang-$CLANG_VER "$BASE_DIR/build/pspsdk/tools/bin2s.c" -o "$ROOT_PATH/psp/bin/bin2s"
 }
 
 function fetch_newlib
