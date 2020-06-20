@@ -11,7 +11,7 @@ BASE_DIR="$PWD"
 
 RUST_URL="https://github.com/overdrivenpotato/rust-psp"
 PSPSDK_URL="https://github.com/wally4000/pspsdk" #This is temporary until the SDK is stable and we can merge back to base
-NEWLIB_URL="git://github.com/NT-Bourgeois-Iridescence-Technologies/newlib"
+NEWLIB_URL="https://github.com/NT-Bourgeois-Iridescence-Technologies/newlib"
 
 ROOT_PATH="/usr/mipsel-sony-psp"
 function fetch_clang
@@ -58,6 +58,9 @@ EOF
     xargo rustc --features stub-only --target mipsel-sony-psp -- -C opt-level=3 -C panic=abort
     cd $BASE_DIR/build
 }
+
+
+
 function populateSDK
 {
 #Setup Directories
@@ -66,14 +69,15 @@ mkdir "$ROOT_PATH/psp/bin" "$ROOT_PATH/psp/sdk/include" "$ROOT_PATH/psp/sdk/shar
 
 #Fetch PSPSDK
 git clone $PSPSDK_URL
+git clone $NEWLIB_URL
+cd pspsdk
+./bootstrap
+mkdir build && cd build
 
-#Move Samples
-rm $BASE_DIR/build/pspsdk/src/samples/Makefile.am
-mv $BASE_DIR/build/pspsdk/src/samples /usr/mipsel-sony-psp/psp/sdk/samples 
-#Remove libc folder to avoid conflicts
-rm -rf $BASE_DIR/build/pspsdk/src/libc
-#find and move headers to appropriate directory
-find $BASE_DIR/build/pspsdk/src -name '*.h' -exec  mv '{}' /usr/mipsel-sony-psp/psp/sdk/include \;
+NEWLIB_INCLUDE=$BASE_DIR/build/newlib/newlib/libc/include
+
+ ../configure PSP_CC="clang -target mips -mcpu=mips2 -msingle-float -mlittle-endian -mno-check-zero-division -D__psp__ -I$NEWLIB_INCLUDE -I$NEWLIB_INCLUDE/../sys/psp -I$(pwd)/../src/base -include clang_psp.h" PSP_CXX=clang++ PSP_AS=llvm-as PSP_LD=ld.lld PSP_AR=llvm-ar PSP_NM=llvm-nm PSP_RANLIB=llvm-ranlib --with-pspdev=/usr/mipsel-sony-psp/
+ make install-data
 
 cp -r "$BASE_DIR/resources/cmake" "$ROOT_PATH/psp/sdk/share"
 cp -r "$BASE_DIR/resources/lib" "$ROOT_PATH/psp/sdk/"
@@ -81,22 +85,29 @@ cp "/root/.cargo/bin/pack-pbp" "$ROOT_PATH/psp/sdk/bin"
 cp "/root/.cargo/bin/mksfo" "$ROOT_PATH/psp/sdk/bin"
 
 cp "$BASE_DIR/build/rust-psp/target/mipsel-sony-psp/debug/libpsp.a" "$ROOT_PATH/psp/sdk/lib"
-clang-$CLANG_VER "$BASE_DIR/build/pspsdk/tools/psp-prxgen.c" -o "$ROOT_PATH/psp/bin/psp-prxgen"
-clang-$CLANG_VER "$BASE_DIR/build/pspsdk/tools/bin2c.c" -o "$ROOT_PATH/psp/bin/bin2c"
-clang-$CLANG_VER "$BASE_DIR/build/pspsdk/tools/bin2o.c" -o "$ROOT_PATH/psp/bin/bin2o"
-clang-$CLANG_VER "$BASE_DIR/build/pspsdk/tools/bin2s.c" -o "$ROOT_PATH/psp/bin/bin2s"
+#clang-$CLANG_VER "$BASE_DIR/build/pspsdk/tools/psp-prxgen.c" -o "$ROOT_PATH/psp/bin/psp-prxgen"
+#clang-$CLANG_VER "$BASE_DIR/build/pspsdk/tools/bin2c.c" -o "$ROOT_PATH/psp/bin/bin2c"
+#clang-$CLANG_VER "$BASE_DIR/build/pspsdk/tools/bin2o.c" -o "$ROOT_PATH/psp/bin/bin2o"
+#clang-$CLANG_VER "$BASE_DIR/build/pspsdk/tools/bin2s.c" -o "$ROOT_PATH/psp/bin/bin2s"
+cd $BASE_DIR/build
 }
 
 function fetch_newlib
 {
 git clone $NEWLIB_URL
-
-#Patch Newlib - Temporary until patches are done upstream
 cd newlib
 mkdir build && cd build
 CC=clang-$CLANG_VER ../configure AR_FOR_TARGET=llvm-ar-$CLANG_VER AS_FOR_TARGET=llvm-as-$CLANG_VER RANLIB_FOR_TARGET=llvm-ranlib-$CLANG_VER CC_FOR_TARGET=clang-$CLANG_VER CXX_FOR_TARGET=clang++-$CLANG_VER --target=psp --enable-newlib-iconv --enable-newlib-multithread --enable-newlib-mb --prefix=/usr/mipsel-sony-psp
 make -j6
 make -j6 install
+cd $BASE_DIR/build
+}
+
+function compileSDK
+{
+    cd $BASE_DIR/build/pspsdk/build
+    make && make install
+    cd $BASE_DIR/build
 }
 
 mkdir build && cd build
@@ -106,3 +117,4 @@ fetch_rust
 compile_libpsp
 populateSDK
 fetch_newlib
+compileSDK
