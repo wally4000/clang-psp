@@ -13,7 +13,7 @@ BASE_DIR="$PWD"
 BUILD_DIR="$BASE_DIR/build"
 RUST_URL="https://github.com/overdrivenpotato/rust-psp"
 PSPSDK_URL="https://github.com/wally4000/pspsdk" #This is temporary until the SDK is stable and we can merge back to base
-NEWLIB_URL="https://github.com/NT-Bourgeois-Iridescence-Technologies/newlib"
+NEWLIB_URL="https://github.com/overdrivenpotato/newlib"
 PSPLINK_URL="https://github.com/pspdev/psplinkusb"
 
 PREFIX="$BASE_DIR/mipsel-sony-psp"
@@ -42,7 +42,7 @@ function prep_sources
 
   #  mkdir -p "$PREFIX/psp/sdk/lib"
     mkdir "$PREFIX/bin"
-    mkdir "$PREFIX/psp/share"
+    mkdir -p "$PREFIX/psp/share"
 }
 ## Configure Rust - This will fall into root
 function fetch_rust
@@ -51,9 +51,9 @@ function fetch_rust
 
     export PATH=$PATH:$HOME/.cargo/bin
     source $HOME/.cargo/env
-    #rustup set profile complete
+    rustup set profile minimal
     rustup toolchain install nightly
-    rustup default nightly-2020-06-05 && rustup component add rust-src
+    rustup default nightly && rustup component add rust-src
     rustup update
     cargo install cargo-psp xargo
 }
