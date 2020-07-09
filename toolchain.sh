@@ -37,7 +37,7 @@ function prep_sources
     mkdir build; cd build
     git clone $RUST_URL
     git clone $PSPSDK_URL
-    git clone $NEWLIB_URL
+    git clone $NEWLIB_URL -b newlib-3_20_0-PSP
     git clone $PSPLINK_URL
 
   #  mkdir -p "$PREFIX/psp/sdk/lib"
@@ -108,7 +108,7 @@ function fetch_psplink
 {
     ## Will fail if libusb 1.0 is not present
     clang-$CLANG_VER psplinkusb/usbhostfs_pc/main.c -Ipsplinkusb/usbhostfs  -DPC_SIDE -D_FILE_OFFSET_BITS=64 -lusb -lpthread -o $PREFIX/bin/usbhostfs_pc
-    clang++-$CLANG_VER psplinkusb/pspsh/*.C -Ipsplinkusb/psplink -D_PCTERM -lreadline -lcurses -o $PREFIX/bin/pspsh
+    clang++-$CLANG_VER psplinkusb/pspsh/*.c -Ipsplinkusb/psplink -D_PCTERM -lreadline -lcurses -o $PREFIX/bin/pspsh
 }
 
 prep_sources
