@@ -15,7 +15,9 @@ NEWLIB_URL="https://github.com/overdrivenpotato/newlib"
 PSPLINK_URL="https://github.com/pspdev/psplinkusb"
 
 PREFIX="$BASE_DIR/mipsel-sony-psp"
-
+PSPDEV=$PREFIX
+PSPSDK=$PREFIX/psp/sdk
+PATH=$PATH:$PSPDEV/bin
 
 function fetch_clang
 {
@@ -38,8 +40,8 @@ function prep_sources
     git clone $NEWLIB_URL -b newlib-3_20_0-PSP --depth=1
     git clone $PSPLINK_URL --depth=1
 
-    mkdir "$PREFIX/bin"
     mkdir -p "$PREFIX/psp/share"
+    mkdir "$PREFIX/bin"
 }
 
 ## Configure Rust - This will fall into root
@@ -113,12 +115,11 @@ function fetch_psplink
 function fetch_libraries
 {
     ## Fetches PSP Libraries
-    mkdir $BUILD_DIR/PSP_LIBS && cd $BUILD_DIR/PSP_LIBS
-    export PSP_LIBS =$BUILD_DIR/PSP_LIBS
-    git clone https://github.com/take-cheeze/pthreads-emb/
+
+    git clone https://github.com/take-cheeze/pthreads-emb/ --depth=1
 
     ## Installs Libraries
-    cd $PSP_LIBS/pthreads-emb/platform/psp
+    cd pthreads-emb/platform/psp
     make -j$(nproc)
     make -j$(nproc) install
 }
@@ -132,4 +133,4 @@ populateSDK
 fetch_newlib
 compileSDK
 #fetch_psplink
-#fetch_libaries
+fetch_libraries
